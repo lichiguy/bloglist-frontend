@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from "react"
-import Blog from "./components/Blog"
-import Togglable from "./components/Togglable"
-import BlogForm from "./components/BlogForm"
-import Notification from "./components/Notification"
-import blogService from "./services/blogs"
-import loginService from "./services/login"
+import { useState, useEffect, useRef } from 'react'
+import Blog from './components/Blog'
+import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
+import Notification from './components/Notification'
+import blogService from './services/blogs'
+import loginService from './services/login'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
   const blogFormRef = useRef()
@@ -20,7 +20,7 @@ const App = () => {
   }, [user])
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem("loggedBlogAppUser")
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
@@ -43,13 +43,13 @@ const App = () => {
         username,
         password,
       })
-      window.localStorage.setItem("loggedBlogAppUser", JSON.stringify(user))
+      window.localStorage.setItem('loggedBlogAppUser', JSON.stringify(user))
       blogService.setToken(user.token)
       setUser(user)
-      setUsername("")
-      setPassword("")
+      setUsername('')
+      setPassword('')
     } catch (error) {
-      setNotification("Wrong username or password")
+      setNotification('Wrong username or password')
     }
   }
 
@@ -66,8 +66,21 @@ const App = () => {
       setBlogs(blogs.concat(returnedBlog))
       setNotification(`A new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
     } catch (exception) {
-      setNotification("Blog was not created, complete the form")
+      setNotification('Blog was not created, complete the form')
     }
+  }
+
+  const deleteBlog = async (blogObject) => {
+    if (window.confirm(`Remove blog ${blogObject.title} by ${blogObject.author}`)) {
+      await blogService.remove(blogObject)
+      setBlogs(blogs.filter(blog => blog.id !== blogObject.id))
+    }
+  }
+
+  const updateLikes = async (blogObject) => {
+    const returnedBlog = await blogService.update(blogObject)
+    returnedBlog.user = blogObject.user
+    setBlogs(blogs.map((blog) => blog.id !== blogObject.id ? blog : returnedBlog))
   }
 
   const loginForm = () => (
@@ -107,9 +120,11 @@ const App = () => {
         <Togglable buttonLabel="create new blog" ref={blogFormRef}>
           <BlogForm createBlog={addBlog} />
         </Togglable>
-        {blogs.map((blog) => (
+        {blogs.sort((a, b) => {
+          return a.likes - b.likes
+        }).map((blog) => (
           <div key={blog.id}>
-            <Blog blog={blog} />
+            <Blog blog={blog} updateBlog={updateLikes} deleteBlog={deleteBlog} user={user} />
           </div>
         ))}
       </div>}

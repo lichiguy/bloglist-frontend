@@ -1,5 +1,5 @@
-import axios from "axios"
-const baseUrl = "/api/blogs"
+import axios from 'axios'
+const baseUrl = '/api/blogs'
 
 let token = null
 
@@ -28,4 +28,26 @@ const create = async (newObject) => {
   return response.data
 }
 
-export default { getAll, setToken, create }
+const remove = async (newObject) => {
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const blogUrl = baseUrl.concat(`/${newObject.id.toString()}`)
+
+  await axios.delete(blogUrl, config)
+}
+
+const update = async (newObject) => {
+  const config = {
+    headers: { Authorization: token },
+  }
+
+  const blogUrl = baseUrl.concat(`/${newObject.id.toString()}`)
+  //console.log(blogUrl)
+
+  const response = await axios.put(blogUrl, newObject, config)
+  return response.data
+}
+
+export default { getAll, setToken, create, update, remove }
