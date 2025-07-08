@@ -63,6 +63,11 @@ const App = () => {
 
     try {
       const returnedBlog = await blogService.create(blogObject)
+      returnedBlog.user = {
+        name: user.name,
+        username: user.username
+      }
+      console.log(returnedBlog)
       setBlogs(blogs.concat(returnedBlog))
       setNotification(`A new blog ${returnedBlog.title} by ${returnedBlog.author} added`)
     } catch (exception) {
@@ -92,6 +97,7 @@ const App = () => {
           type="text"
           value={username}
           name="Username"
+          data-testid='username'
           onChange={({ target }) => setUsername(target.value)}
         />
       </div>
@@ -101,6 +107,7 @@ const App = () => {
           type="password"
           value={password}
           name="Password"
+          data-testid='password'
           onChange={({ target }) => setPassword(target.value)}
         />
       </div>
@@ -118,7 +125,7 @@ const App = () => {
           {user.name} logged in<button onClick={handleLogout}>log out</button>
         </p>
         <Togglable buttonLabel="create new blog" ref={blogFormRef}>
-          <BlogForm createBlog={addBlog} />
+          <BlogForm createBlog={addBlog} user={user} />
         </Togglable>
         {blogs.sort((a, b) => {
           return a.likes - b.likes
